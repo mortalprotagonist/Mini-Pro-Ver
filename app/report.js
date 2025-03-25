@@ -14,22 +14,6 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { useLocalSearchParams } from 'expo-router';
-import * as Notifications from 'expo-notifications';
-
-// Optionally, you can add a helper to register for notifications
-async function registerForPushNotificationsAsync() {
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  let finalStatus = existingStatus;
-  if (existingStatus !== 'granted') {
-    const { status } = await Notifications.requestPermissionsAsync();
-    finalStatus = status;
-  }
-  if (finalStatus !== 'granted') {
-    Alert.alert('Permission required', 'Unable to get push notification permissions!');
-    return false;
-  }
-  return true;
-}
 
 export default function ReportScreen() {
   const params = useLocalSearchParams();
@@ -64,24 +48,9 @@ export default function ReportScreen() {
     };
 
     try {
-      // Store the report data in a Firestore collection called 'accidentReports'
+      // Store the report data in the 'accidentReports' collection
       const docRef = await addDoc(collection(db, "accidentReports"), reportData);
       console.log("Document written with ID:", docRef.id);
-      
-      // Ensure notification permissions are granted
-      const hasPermission = await registerForPushNotificationsAsync();
-      if (hasPermission) {
-        // Schedule a local notification to inform the user
-        await Notifications.scheduleNotificationAsync({
-          content: {
-            title: 'Accident Reported',
-            body: 'The accident has been reported to the Authority and help is on the way.',
-            sound: 'default',
-          },
-          trigger: null, // immediate trigger
-        });
-      }
-      
       Alert.alert('Success', 'Accident report submitted successfully');
       router.back();
     } catch (error) {
@@ -143,7 +112,7 @@ export default function ReportScreen() {
           </View>
         </View>
 
-        {/* Type of Accident Dropdown */}
+        {/* Accident Type Dropdown */}
         <View style={styles.field}>
           <View style={styles.labelContainer}>
             <MaterialIcons name="car-crash" size={18} color="#666" />
